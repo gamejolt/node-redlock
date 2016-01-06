@@ -15,9 +15,9 @@ var extendScript = 'if redis.call("get", KEYS[1]) == ARGV[1] then return redis.c
 
 // defaults
 var defaults = {
-	driftFactor: 0.01,
-	retryCount:  3,
-	retryDelay:  200
+	driftFactor: 0.1,
+	retryCount:  7,
+	retryDelay:  50
 };
 
 
@@ -281,8 +281,11 @@ Redlock.prototype._lock = function _lock(resource, value, ttl, callback) {
 				return lock.unlock(function(){
 
 					// RETRY
-					if(attempts <= self.retryCount)
-						return setTimeout(attempt, self.retryDelay);
+					if(attempts <= self.retryCount) {
+						var retryIn = Math.random() * self.retryDelay;
+						self.retryDelay *= 2;
+						return setTimeout(attempt, retryIn);
+					}
 
 					// FAILED
 					return reject(new LockError('Exceeded ' + self.retryCount + ' attempts to lock the resource "' + resource + '".'));
