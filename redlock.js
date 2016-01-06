@@ -283,6 +283,7 @@ Redlock.prototype._lock = function _lock(resource, value, ttl, callback) {
 				return lock.unlock(function(){
 
 					// RETRY
+					if(attempts <= self.retryCount) {
 						var retryIn = self.retryDelay;
 						if ( self.exponentialBackoff ) {
 							retryIn *= Math.random();
